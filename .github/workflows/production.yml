@@ -74,7 +74,8 @@ jobs:
       - name: Health checks
         run: |
           curl -fsS "${{ vars.PROD_API_URL }}/health"
-          curl -fsS -o /dev/null "${{ vars.PROD_WEB_URL }}/b/fade-republic"
+          # Switch to /b/fade-republic once the booking page exists (P2).
+          curl -fsS -o /dev/null "${{ vars.PROD_WEB_URL }}/"
 
   lighthouse:
     needs: smoke

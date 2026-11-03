@@ -73,6 +73,6 @@ Vercel Deployment Protection blocks unauthenticated requests to previews — inc
 | Best practices | 1.0 |
 | SEO | 1.0 (public pages only) |
 
-Plus resource budgets: LCP ≤ 2.0s, CLS ≤ 0.02, TBT ≤ 150ms, JS on booking page ≤ 120 KB gzip. Pages: `/` landing, `/b/fade-republic` booking page, `/b/fade-republic/chat`, `/login`. Authenticated dashboard pages are audited in Playwright with a logged-in storage state (accessibility + basic perf), not LHCI.
+Plus resource budgets: LCP ≤ 2.0s, CLS ≤ 0.02, TBT ≤ 150ms, JS on booking page ≤ 120 KB gzip. Pages: `/` landing, `/b/fade-republic` booking page, `/b/fade-republic/chat`, `/login` — each added to `lighthouserc.cjs` (and `load/k6/smoke.js`) in the PR that ships it, so the gate never audits a 404. Authenticated dashboard pages are audited in Playwright with a logged-in storage state (accessibility + basic perf), not LHCI.
 
 Tested with mobile emulation + simulated slow 4G, because that's our customers' reality.

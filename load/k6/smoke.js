@@ -17,13 +17,13 @@ export const options = {
 };
 
 export default function () {
-  const pages = ['/', '/b/fade-republic', '/b/fade-republic/chat'];
+  // Only routes that exist. Add '/b/fade-republic' (P2) and '/b/fade-republic/chat' (P3) as they land.
+  const pages = ['/'];
   for (const p of pages) {
     check(http.get(WEB + p, { headers }), { [`${p} 200`]: (r) => r.status === 200 });
   }
   check(http.get(`${API}/health`, { headers }), { 'api health': (r) => r.status === 200 });
-  check(http.get(`${API}/public/fade-republic/slots?service=low-cut&limit=6`, { headers }), {
-    'slots 200': (r) => r.status === 200,
-  });
+  // TODO(P1/P2): re-enable once the public slots endpoint exists:
+  // GET ${API}/public/fade-republic/slots?service=low-cut&limit=6 → 200
   sleep(1);
 }

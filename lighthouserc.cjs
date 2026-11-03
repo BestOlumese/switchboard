@@ -4,7 +4,8 @@
 const base = process.env.LHCI_BASE_URL ?? 'http://localhost:3000';
 const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
-const pages = ['/', '/b/fade-republic', '/b/fade-republic/chat', '/login'];
+// Only pages that exist. Add as they land: '/b/fade-republic' (P2), '/b/fade-republic/chat' (P3), '/login' (P4).
+const pages = ['/'];
 
 module.exports = {
   ci: {
