@@ -1,0 +1,32 @@
+name: load-and-chaos
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *" # 02:00 Lagos nightly
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot production-like stack (Docker, mock-kora — never prod Neon)
+        run: |
+          cp .env.example .env
+          sed -i 's/^HOLD_MINUTES=.*/HOLD_MINUTES=1/' .env
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build --wait
+          docker compose exec -T api pnpm db:seed
+      - name: Slot contention (100 VUs vs 10 slots)
+        run: docker compose --profile load run --rm k6 run /scripts/booking-contention.js
+      - name: Webhook storm (duplicates + shuffle)
+        run: docker compose --profile load run --rm k6 run /scripts/webhook-storm.js
+      - name: Chat throughput (mock LLM)
+        run: docker compose --profile load run --rm k6 run /scripts/chat-throughput.js
+      - name: Chaos suite (invariants)
+        run: docker compose exec -T api pnpm chaos
+      - if: failure()
+        run: docker compose logs --no-color > compose.log
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with: { name: load-debug, path: compose.log }

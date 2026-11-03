@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
+# AGENTS/02-tech-stack: pin exact versions
+saveExact: true
+
+# Install scripts are deny-by-default. Allow only what we need.
+allowBuilds:
+  esbuild: true # native binary for drizzle-kit / tsx / tsdown
+  protobufjs: false # transitive via inngest telemetry; postinstall not needed

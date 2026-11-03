@@ -1,0 +1,11 @@
+# Production-like local run (for Lighthouse and k6). Overrides dev commands.
+# docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  api:
+    command: sh -c "pnpm --filter @switchboard/api build && pnpm --filter @switchboard/api start"
+    environment:
+      NODE_ENV: production
+  web:
+    command: sh -c "pnpm --filter @switchboard/web build && pnpm --filter @switchboard/web start"
+    environment:
+      NODE_ENV: production

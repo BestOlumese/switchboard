@@ -1,0 +1,95 @@
+name: ci
+
+# Reusable only: preview.yml (PRs) and production.yml (main) call it,
+# so it runs exactly once per event and deploys always wait for it.
+on:
+  workflow_call:
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  NODE_VERSION: 22
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm knip
+      - run: pnpm test -- --coverage
+      - run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: "1" # build doesn't need real secrets
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: switchboard
+          POSTGRES_PASSWORD: switchboard
+          POSTGRES_DB: switchboard
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U switchboard"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      DATABASE_URL: postgres://switchboard:switchboard@localhost:5432/switchboard
+      DATABASE_URL_UNPOOLED: postgres://switchboard:switchboard@localhost:5432/switchboard
+      KORA_BASE_URL: http://localhost:4010/merchant
+      KORA_SECRET_KEY: sk_test_ci_mock
+      WA_API_BASE_URL: http://localhost:4010/_wa
+      WA_APP_SECRET: ci-app-secret
+      LLM_PROVIDER: mock
+      INNGEST_DEV: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - name: Start mock-kora
+        run: |
+          pnpm --filter @switchboard/mock-kora start &
+          npx wait-on -t 30000 http://localhost:4010/health
+      - run: pnpm test:int -- --coverage
+      - name: Coverage gate (booking, kora ≥ 90%)
+        run: pnpm coverage:check
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot full stack (production build) in Docker
+        run: |
+          cp .env.example .env
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build --wait
+          docker compose exec -T api pnpm db:seed
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+        env: { E2E_BASE_URL: http://localhost:3000 }
+      - name: Lighthouse on local prod build (early signal; preview run is the gate)
+        run: pnpm dlx @lhci/cli autorun --config=./lighthouserc.cjs
+        env: { LHCI_BASE_URL: http://localhost:3000 }
+      - if: failure()
+        run: docker compose logs --no-color > compose.log
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-debug
+          path: |
+            compose.log
+            apps/web/playwright-report

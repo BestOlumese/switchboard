@@ -1,0 +1,123 @@
+name: preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  NODE_VERSION: 22
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    outputs:
+      web_url: ${{ steps.web.outputs.url }}
+      api_url: ${{ steps.api.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: npm i -g vercel@latest
+
+      # 1. Neon branch for this PR (copy-on-write from main). Check the action's current major.
+      - name: Create Neon branch
+        id: neon
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: pr-${{ github.event.pull_request.number }}
+          parent: main
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      # 2. Migrate + seed the branch
+      - run: pnpm db:migrate
+        env: { DATABASE_URL_UNPOOLED: "${{ steps.neon.outputs.db_url }}" }
+      - run: pnpm db:seed
+        env: { DATABASE_URL: "${{ steps.neon.outputs.db_url }}" }
+
+      # 3. Deploy API (preview) with the branch DB
+      - name: Deploy api
+        id: api
+        env: { VERCEL_PROJECT_ID: "${{ secrets.VERCEL_PROJECT_ID_API }}" }
+        run: |
+          rm -rf .vercel
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} \
+            --env DATABASE_URL="${{ steps.neon.outputs.db_url_with_pooler }}")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      # 4. Deploy web (preview) pointing at that API (rewrites are build-time)
+      - name: Deploy web
+        id: web
+        env: { VERCEL_PROJECT_ID: "${{ secrets.VERCEL_PROJECT_ID_WEB }}" }
+        run: |
+          rm -rf .vercel
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          echo "API_ORIGIN=${{ steps.api.outputs.url }}" >> .vercel/.env.preview.local
+          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+  lighthouse:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}" }
+      - name: Lighthouse CI (gate)
+        id: lhci
+        run: npx @lhci/cli@latest autorun --config=./lighthouserc.cjs
+        env:
+          LHCI_BASE_URL: ${{ needs.deploy.outputs.web_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  k6-smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/setup-k6-action@v1
+      - run: k6 run --summary-export=k6-summary.json load/k6/smoke.js
+        env:
+          BASE_URL: ${{ needs.deploy.outputs.web_url }}
+          API_URL: ${{ needs.deploy.outputs.api_url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      - uses: actions/upload-artifact@v4
+        with: { name: k6-smoke, path: k6-summary.json }
+
+  comment:
+    needs: [deploy, lighthouse, k6-smoke]
+    if: always() && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: preview
+          message: |
+            ### Preview ready
+            | | |
+            |---|---|
+            | Web | ${{ needs.deploy.outputs.web_url }} |
+            | API | ${{ needs.deploy.outputs.api_url }} |
+            | Neon branch | `pr-${{ github.event.pull_request.number }}` |
+            | Lighthouse | ${{ needs.lighthouse.result }} (report links in the job log) |
+            | k6 smoke | ${{ needs.k6-smoke.result }} |

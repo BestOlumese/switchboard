@@ -1,0 +1,85 @@
+name: production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: production
+  cancel-in-progress: false # never cancel a deploy halfway
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  NODE_VERSION: 22
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  migrate:
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production # GitHub environment: optional manual approval
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Migrate Neon main (unpooled)
+        run: pnpm db:migrate
+        env: { DATABASE_URL_UNPOOLED: "${{ secrets.DATABASE_URL_PROD_UNPOOLED }}" }
+
+  deploy:
+    needs: migrate
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      web_url: ${{ steps.web.outputs.url }}
+      api_url: ${{ steps.api.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: npm i -g vercel@latest
+
+      # Prod values (Neon main, Kora, WhatsApp, LLM) come from the Vercel Production env
+      - name: Deploy api
+        id: api
+        env: { VERCEL_PROJECT_ID: "${{ secrets.VERCEL_PROJECT_ID_API }}" }
+        run: |
+          rm -rf .vercel
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy web
+        id: web
+        env: { VERCEL_PROJECT_ID: "${{ secrets.VERCEL_PROJECT_ID_WEB }}" }
+        run: |
+          rm -rf .vercel
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health checks
+        run: |
+          curl -fsS "${{ vars.PROD_API_URL }}/health"
+          curl -fsS -o /dev/null "${{ vars.PROD_WEB_URL }}/b/fade-republic"
+
+  lighthouse:
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx @lhci/cli@latest autorun --config=./lighthouserc.cjs
+        env: { LHCI_BASE_URL: "${{ vars.PROD_WEB_URL }}" }

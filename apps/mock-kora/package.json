@@ -1,0 +1,23 @@
+{
+  "name": "@switchboard/mock-kora",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.6",
+    "@switchboard/env": "workspace:*",
+    "hono": "4.13.16"
+  },
+  "devDependencies": {
+    "@switchboard/config": "workspace:*",
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@switchboard/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./biome-preset.json": "./biome-preset.json",
+    "./vitest": "./vitest.ts"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.1.0",
+    "vitest": "5.1.0"
+  }
+}

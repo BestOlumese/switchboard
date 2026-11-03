@@ -1,0 +1,30 @@
+{
+  "name": "@switchboard/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/server.ts",
+    "build": "tsdown",
+    "start": "node dist/server.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:int": "vitest run --config vitest.int.config.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.6",
+    "@switchboard/db": "workspace:*",
+    "@switchboard/env": "workspace:*",
+    "@vercel/functions": "3.10.5",
+    "hono": "4.13.16",
+    "inngest": "4.26.2",
+    "pino": "10.4.0"
+  },
+  "devDependencies": {
+    "@switchboard/config": "workspace:*",
+    "@types/node": "26.6.6",
+    "tsdown": "0.23.4",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

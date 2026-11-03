@@ -1,0 +1,17 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "stream",
+  "globalPassThroughEnv": ["SKIP_ENV_VALIDATION"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": ["NODE_ENV", "API_ORIGIN", "PUBLIC_APP_URL"]
+    },
+    "typecheck": { "dependsOn": ["^typecheck"] },
+    "test": { "outputs": ["coverage/**"] },
+    "test:int": { "cache": false, "passThroughEnv": ["DATABASE_URL", "DATABASE_URL_UNPOOLED"] },
+    "coverage:check": { "cache": false },
+    "dev": { "cache": false, "persistent": true }
+  }
+}

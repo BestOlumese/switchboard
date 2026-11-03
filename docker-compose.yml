@@ -1,0 +1,116 @@
+# Local development — everything in Docker.
+# Usage: cp .env.example .env && docker compose up -d --build
+name: switchboard
+
+x-node-app: &node-app
+  build:
+    context: .
+    dockerfile: infra/docker/Dockerfile.dev
+  env_file: .env
+  volumes:
+    - .:/app
+    # keep container node_modules out of the host bind mount
+    - node_modules:/app/node_modules
+    - web_node_modules:/app/apps/web/node_modules
+    - api_node_modules:/app/apps/api/node_modules
+    - mock_kora_node_modules:/app/apps/mock-kora/node_modules
+    # pnpm is strict: each workspace package resolves deps from its own node_modules.
+    # Add a volume here for every new package that has dependencies.
+    - config_node_modules:/app/packages/config/node_modules
+    - env_node_modules:/app/packages/env/node_modules
+    - db_node_modules:/app/packages/db/node_modules
+    - pnpm_store:/pnpm/store
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: switchboard
+      POSTGRES_PASSWORD: switchboard
+      POSTGRES_DB: switchboard
+    # Host side only; containers always use postgres:5432. Override if 5432 is taken locally.
+    ports: ["${POSTGRES_HOST_PORT:-5432}:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U switchboard -d switchboard"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    <<: *node-app
+    command: pnpm --filter @switchboard/db migrate
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  mock-kora:
+    <<: *node-app
+    command: pnpm --filter @switchboard/mock-kora dev
+    ports: ["4010:4010"]
+    environment:
+      PORT: "4010"
+      WEBHOOK_TARGET: http://api:4000/webhooks/kora
+      WA_WEBHOOK_TARGET: http://api:4000/webhooks/whatsapp
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4010/health || exit 1"]
+      interval: 3s
+      retries: 30
+
+  api:
+    <<: *node-app
+    command: pnpm --filter @switchboard/api dev
+    ports: ["4000:4000"]
+    environment:
+      PORT: "4000"
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      mock-kora: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 3s
+      retries: 40
+
+  inngest:
+    image: inngest/inngest:latest
+    command: inngest dev -u http://api:4000/api/inngest --no-discovery
+    ports: ["8288:8288"]
+    depends_on:
+      api: { condition: service_healthy }
+
+  web:
+    <<: *node-app
+    command: pnpm --filter @switchboard/web dev
+    ports: ["3000:3000"]
+    depends_on:
+      api: { condition: service_healthy }
+
+  # ---- opt-in tools ----
+  k6:
+    image: grafana/k6:latest
+    profiles: [load]
+    volumes: [./load/k6:/scripts:ro]
+    environment:
+      BASE_URL: http://web:3000
+      API_URL: http://api:4000
+      MOCK_KORA_URL: http://mock-kora:4010
+
+  lhci:
+    image: patrickhulce/lhci-client:latest
+    profiles: [quality]
+    volumes: [.:/repo]
+    working_dir: /repo
+    environment:
+      LHCI_BASE_URL: http://web:3000
+    command: lhci autorun --config=./lighthouserc.cjs
+
+volumes:
+  pgdata:
+  node_modules:
+  web_node_modules:
+  api_node_modules:
+  mock_kora_node_modules:
+  config_node_modules:
+  env_node_modules:
+  db_node_modules:
+  pnpm_store:
