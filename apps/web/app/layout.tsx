@@ -1,15 +1,61 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Geist, JetBrains_Mono } from 'next/font/google';
 import type { ReactNode } from 'react';
+import './globals.css';
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+export const viewport: Viewport = {
+  themeColor: '#101827',
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
-  title: 'Switchboard',
-  description: 'Book real slots on WhatsApp and web chat, with a deposit that stops no-shows.',
+  title: 'Switchboard — AI Front Desk for Modern Businesses',
+  description:
+    'Switchboard gives your business AI assistants that answer customers, manage bookings, capture leads, and complete approved tasks—without losing the human touch.',
+  metadataBase: new URL('https://switchboard.ng'),
+  openGraph: {
+    title: 'Switchboard — AI Front Desk for Modern Businesses',
+    description:
+      'Your business never stops. Neither should your front desk. AI assistants with deterministic booking and Kora payments.',
+    siteName: 'Switchboard',
+    locale: 'en_NG',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Switchboard — AI Front Desk for Modern Businesses',
+    description:
+      'Your business never stops. Neither should your front desk. AI assistants with deterministic booking and Kora payments.',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className={`${geistSans.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        />
+      </head>
+      <body className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-white">
+        {children}
+      </body>
     </html>
   );
 }
