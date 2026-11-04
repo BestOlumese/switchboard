@@ -1,7 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
   "workspaces": {
-    "apps/api": { "entry": ["src/index.ts"] },
     "apps/web": { "entry": ["lib/auth-client.ts"] }
   },
   "ignoreFiles": ["load/**", "lighthouserc.cjs"],

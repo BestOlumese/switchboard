@@ -17,6 +17,7 @@
     "api": {
       "root": "apps/api",
       "framework": "hono",
+      "entrypoint": "src/index.ts",
       "bindings": [
         {
           "type": "service",
@@ -29,14 +30,7 @@
     "mock-kora": {
       "root": "apps/mock-kora",
       "framework": "hono",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "api",
-          "format": "url",
-          "env": "API_ORIGIN"
-        }
-      ]
+      "entrypoint": "src/index.ts"
     }
   },
   "rewrites": [

@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { clientSchema } from './client.ts';
-import { apiSchema, EnvError, inngestSchema, llmSchema, migrateSchema, parseEnv } from './index.ts';
+import {
+  apiSchema,
+  authSchema,
+  EnvError,
+  inngestSchema,
+  llmSchema,
+  migrateSchema,
+  parseEnv,
+  webSchema,
+} from './index.ts';
 
 const localApi = {
   DATABASE_URL: 'postgres://switchboard:switchboard@postgres:5432/switchboard',
@@ -65,6 +74,29 @@ describe('llmSchema', () => {
       llmSchema.safeParse({ LLM_PROVIDER: 'anthropic', LLM_MODEL: 'm', ANTHROPIC_API_KEY: 'k' })
         .success,
     ).toBe(true);
+  });
+});
+
+describe('authSchema and webSchema', () => {
+  it('rejects the Better Auth default placeholder secret', () => {
+    expect(
+      authSchema.safeParse({
+        BETTER_AUTH_SECRET: 'better-auth-secret-12345678901234567890',
+        BETTER_AUTH_URL: 'http://localhost:3000',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('validates web server env and applies URL defaults', () => {
+    const env = parseEnv(webSchema, {
+      DATABASE_URL: 'postgres://switchboard:switchboard@localhost:5432/switchboard',
+      BETTER_AUTH_SECRET: 'local-dev-secret-change-me-32-characters-min',
+      BETTER_AUTH_URL: 'https://switchboard.example.com',
+      PUBLIC_APP_URL: 'https://switchboard.example.com',
+      API_ORIGIN: 'https://api.switchboard.example.com',
+    });
+    expect(env.BETTER_AUTH_URL).toBe('https://switchboard.example.com');
+    expect(env.API_ORIGIN).toBe('https://api.switchboard.example.com');
   });
 });
 

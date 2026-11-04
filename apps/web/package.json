@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@switchboard/env": "workspace:*",
     "better-auth": "1.7.16",
     "drizzle-orm": "0.45.4",
     "next": "16.4.4",

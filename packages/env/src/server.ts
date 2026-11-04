@@ -16,8 +16,18 @@ export const dbSchema = z.object({ DATABASE_URL: postgresUrl });
 /** Migrations only. Neon *direct* URL: PgBouncer transaction mode breaks some DDL. */
 export const migrateSchema = z.object({ DATABASE_URL_UNPOOLED: postgresUrl });
 
+const DEFAULT_BETTER_AUTH_SECRETS = new Set([
+  'better-auth-secret-123456789',
+  'better-auth-secret-12345678901234567890',
+]);
+
 export const authSchema = z.object({
-  BETTER_AUTH_SECRET: z.string().min(32, 'must be at least 32 characters'),
+  BETTER_AUTH_SECRET: z
+    .string()
+    .min(32, 'must be at least 32 characters')
+    .refine((secret) => !DEFAULT_BETTER_AUTH_SECRETS.has(secret), {
+      message: 'must not be the Better Auth default placeholder secret',
+    }),
   BETTER_AUTH_URL: z.url(),
 });
 
@@ -101,15 +111,33 @@ export const apiSchema = z
   .and(llmSchema);
 export type ApiEnv = z.infer<typeof apiSchema>;
 
-/** Server side of apps/web (rewrites, metadata). Never imported by client components. */
+const resolveDefaultAppUrl = () =>
+  process.env.BETTER_AUTH_URL ||
+  process.env.PUBLIC_APP_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000');
+
+/** Server side of apps/web (Better Auth, rewrites, metadata). Never imported by client components. */
 export const webSchema = z.object({
   ...nodeSchema.shape,
-  API_ORIGIN: z.url(),
-  PUBLIC_APP_URL: z.url(),
+  ...dbSchema.shape,
+  BETTER_AUTH_SECRET: authSchema.shape.BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL: z.url().default(resolveDefaultAppUrl),
+  API_ORIGIN: z.url().default('http://localhost:4000'),
+  PUBLIC_APP_URL: z.url().default(resolveDefaultAppUrl),
 });
 export type WebEnv = z.infer<typeof webSchema>;
 
-const defaultApiTarget = process.env.API_ORIGIN ?? process.env.API_URL ?? 'http://localhost:4000';
+const defaultApiTarget =
+  process.env.API_ORIGIN ??
+  process.env.API_URL ??
+  process.env.PUBLIC_API_URL ??
+  process.env.PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:4000');
 
 /** apps/mock-kora (local + CI only). */
 export const mockKoraSchema = z.object({
