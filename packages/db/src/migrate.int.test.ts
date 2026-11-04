@@ -20,4 +20,28 @@ describe('migrations', () => {
     );
     expect(rows).toHaveLength(1);
   });
+
+  it('creates Better Auth tables, foreign keys, and indexes', async () => {
+    const { rows: tables } = await pool.query<{ tablename: string }>(
+      `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('user', 'session', 'account', 'verification') ORDER BY tablename`,
+    );
+    expect(tables.map((r) => r.tablename)).toEqual(['account', 'session', 'user', 'verification']);
+
+    const { rows: fks } = await pool.query<{ conname: string }>(
+      `SELECT conname FROM pg_constraint WHERE contype = 'f' AND conname IN ('account_user_id_user_id_fk', 'session_user_id_user_id_fk') ORDER BY conname`,
+    );
+    expect(fks.map((r) => r.conname)).toEqual([
+      'account_user_id_user_id_fk',
+      'session_user_id_user_id_fk',
+    ]);
+
+    const { rows: indexes } = await pool.query<{ indexname: string }>(
+      `SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND indexname IN ('account_userId_idx', 'session_userId_idx', 'verification_identifier_idx') ORDER BY indexname`,
+    );
+    expect(indexes.map((r) => r.indexname)).toEqual([
+      'account_userId_idx',
+      'session_userId_idx',
+      'verification_identifier_idx',
+    ]);
+  });
 });
