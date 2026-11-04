@@ -1,9 +1,21 @@
 import type { NextConfig } from 'next';
 
-// Placeholder from P0 backend scaffolding. Owner: B (Tailwind, tokens, /api/* rewrite to API_ORIGIN).
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  async rewrites() {
+    const apiOrigin = process.env.API_ORIGIN ?? 'http://localhost:4000';
+    return {
+      beforeFiles: [],
+      afterFiles: [],
+      fallback: [
+        {
+          source: '/api/:path*',
+          destination: `${apiOrigin}/api/:path*`,
+        },
+      ],
+    };
+  },
 };
 
 export default config;

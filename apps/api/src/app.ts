@@ -1,5 +1,5 @@
 import type { Pool } from '@switchboard/db';
-import { Hono } from 'hono';
+import { type Context, Hono } from 'hono';
 import { requestId } from 'hono/request-id';
 import { serve } from 'inngest/hono';
 import { functions, inngest } from './inngest.ts';
@@ -31,7 +31,7 @@ export function createApp({ pool, logger }: AppDeps) {
     );
   });
 
-  app.get('/health', async (c) => {
+  const handleHealth = async (c: Context<Env>) => {
     try {
       await pool.query('SELECT 1');
       return c.json({ status: 'ok', db: 'ok' });
@@ -39,7 +39,9 @@ export function createApp({ pool, logger }: AppDeps) {
       logger.error({ request_id: c.get('requestId'), err: error }, 'health: db unreachable');
       return c.json({ status: 'error', db: 'down' }, 503);
     }
-  });
+  };
+  app.get('/health', handleHealth);
+  app.get('/api/health', handleHealth);
 
   const inngestHandler = serve({ client: inngest, functions });
   app.on(['GET', 'PUT', 'POST'], '/api/inngest', (c) => inngestHandler(c));

@@ -1,83 +1,358 @@
-# 11 — Frontend design
+# SWITCHBOARD — DESIGN SYSTEM
 
-## Subject, audience, job
+**Version:** 1.0  
+**Design direction:** Premium Hybrid  
+**Platform:** Responsive Web SaaS  
+**Product:** Multi-industry AI Business Operations Platform
 
-- **Subject:** appointments at a Nigerian barbershop or salon — the chalkboard of names, the "who's next?", the WhatsApp voice note asking "you dey free by 4?"
-- **Audiences:** (1) the customer on a mid-range Android with patchy data, booking in under a minute; (2) the owner glancing at the day between clients; (3) judges watching the chaos dashboard on a projector.
-- **Primary job:** make it obvious, at every moment, **whether a slot is held, confirmed, or free** — and how long a hold has left.
+## 1. Product Identity
 
-## The one memorable thing: the hold band
+Switchboard is an AI-powered business operations platform that allows businesses to deploy intelligent assistants capable of handling customer conversations and completing approved business tasks.
 
-A held slot carries a **danfo-yellow band that drains** left-to-right over its 15 minutes. When payment verifies, the band floods indigo and the slot locks as confirmed (one 300ms transition — the only orchestrated motion in the product). Same element everywhere: the customer's deposit card in chat, the owner's day calendar, every slot tile on the chaos dashboard. On stage, 100 bots fighting over 10 slots reads instantly as yellow bands appearing, draining, and either turning indigo or vanishing.
+The user experience must communicate three qualities:
 
-Everything else stays quiet.
+- **Intelligence:** Advanced AI technology made approachable.
+- **Reliability:** Clear execution outcomes, human oversight, and trustworthy interactions.
+- **Simplicity:** Complex operations presented through intuitive workflows.
 
-## Tokens
+Brand personality: Modern, confident, sophisticated, helpful, intelligent, and trustworthy.
 
-### Colour
+Avoid generic chatbot branding, excessive gradients, neon overload, futuristic clutter, and unnecessarily complicated interfaces.
 
-| Name | Hex | Use |
-|------|-----|-----|
-| Adire indigo | `#22306B` | Brand, primary buttons, confirmed state |
-| Night indigo | `#151B3F` | Body text on light, dark-mode surface |
-| Harmattan paper | `#F5F6FA` | App background (cool, not cream) |
-| Danfo yellow | `#F5B700` | **Held** state and countdown only — never decoration |
-| Palm green | `#17805A` | Paid / success toasts, money dashboard positives |
-| Slate | `#5D6680` | Secondary text, free slots outline |
-| Kola red | `#B3261E` | Errors, no-shows |
+## 2. Visual Strategy
 
-Yellow on paper fails contrast for text → the band is never text-bearing; labels sit beside it in Night indigo. All text pairs ≥ 4.5:1 (checked by axe in CI).
+Use the **Premium Hybrid** visual approach.
 
-### Type
+### Public Website
 
-- **Familjen Grotesk** (600/700) — headings, slot times, money figures. Times are the hero content, set large with tabular figures.
-- **Atkinson Hyperlegible Next** (400/500) — body and UI. Chosen for legibility on small, low-quality screens.
-- Scale (1.25): 13 / 16 / 20 / 25 / 31 / 39 px. Body 16px, line-height 1.5, max 70ch.
-- Self-host via `next/font/google` with `display: 'swap'` and only the weights listed.
+- Dark cinematic hero and premium editorial typography.
+- Deep midnight surfaces with restrained indigo lighting.
+- Product-focused visuals rather than excessive illustrations.
+- Sophisticated transitions and micro-interactions.
+- Alternating light and dark sections where appropriate.
+- Clear primary calls to action.
+- Spacious layouts and strong visual hierarchy.
 
-### Shape & space
+### Auth and Onboarding
 
-- 4px grid. Radius: 6px inputs/buttons, 10px slot tiles, 16px sheets. No shadows on cards; hierarchy from borders (`#DDE0EA`) and spacing.
+- Clean, minimal interfaces.
+- Light backgrounds with restrained brand accents.
+- Clear forms and validation feedback.
+- Guided progress indicators.
+- Consistent step-by-step navigation.
+- Strong mobile responsiveness.
 
-## Layouts
+### Business Dashboard
 
-**Public booking page (`/b/[slug]`), mobile-first, left-aligned:**
+- Light-first professional SaaS interface.
+- Persistent sidebar on desktop.
+- Compact mobile navigation.
+- Cards, tables, activity timelines, and structured forms.
+- Clear statuses and action priorities.
+- Accessible typography and generous spacing.
 
-```
-┌─────────────────────────┐
-│ Fade Republic           │  name, area, open now
-│ Ota · Open till 8pm     │
-├─────────────────────────┤
-│ Low cut        ₦3,000   │  service rows (tap to pick)
-│ 30 min · ₦1,000 deposit │
-│ Braids        ₦15,000   │
-├─────────────────────────┤
-│ Sat 8 Nov               │  day strip (scroll)
-│ [10:00] [10:30] [13:15] │  time chips
-├─────────────────────────┤
-│ ▓▓▓▓▓▓▓▓▓░░░  12:41 left│  hold band + deposit card
-│ Transfer ₦1,015 to      │
-│ Wema 9912345678         │  [Copy account number]
-└─────────────────────────┘
-```
+### Voice Testing Studio
 
-**Owner dashboard, day view:** staff as columns, time down the left, bookings as tiles with hold bands. Right side: inbox with conversations needing a human pinned on top. Collapses to a single staff column + bottom-sheet inbox on mobile.
+- Dedicated immersive dark surface.
+- Voice visualization and conversation transcript.
+- Session status and execution activity.
+- Clear distinction between successful, failed, pending, and uncertain actions.
 
-**Chaos dashboard (projector):** 10 large slot tiles in a row, bot activity as a scrolling log underneath, and five invariant counters with pass/fail. Dark mode (Night indigo surface) for projector contrast.
+## 3. Color Palette
 
-## Copy rules
+### Brand Colors
 
-- Name things as users would: "Deposit", "Held for you", "Confirmed", "Hand over to staff". Not "payment intent", "webhook", "escalation".
-- Buttons say what happens: "Hold this time", "Copy account number", "Reply as staff", "Refund deposit". Toast echoes the verb: "Deposit refunded".
-- Errors give the fix: "That time just got taken. Here are the next three."
-- Empty states invite action: "No bookings today. Share your booking link" + copy button.
-- Sentence case everywhere. No all-caps labels, no eyebrows above headings, no "→" on buttons.
+| Token | Value | Purpose |
+|---|---|---|
+| Midnight | `#101827` | Dark backgrounds, hero sections, and projector Chaos Dashboard |
+| Canvas | `#F7F8FB` | App and dashboard page backgrounds |
+| Surface | `#FFFFFF` | Cards, dialogs, forms, slot tiles |
+| Iris | `#6258E8` | Brand primary, CTA buttons, and **confirmed** slot state |
+| Iris Light | `#A5B4FC` | Dark-surface accents and waveform/activity highlights |
+| Success | `#10B981` | Confirmed positive states, paid toasts, money dashboard positives |
+| Warning | `#F59E0B` | **Held** slot state, countdown hold band, and non-blocking warnings |
+| Danger | `#EF4444` | Errors, no-shows, and destructive operations |
+| Slate | `#64748B` | Secondary information and free slot outlines |
+| Border | `#E5E7EB` | Light-surface borders |
 
-## Performance rules (Lighthouse ≥ 95)
+### Typography Colors
 
-- Booking page is a Server Component; only the time-chip picker and deposit card are client components.
-- No client-side chart lib on public pages. Dashboard charts lazy-loaded.
-- Images: business logo only, `next/image`, sized.
-- Fonts: 2 families, ≤ 4 weight files total, preloaded.
-- `prefers-reduced-motion`: band shows remaining time as text and steps instead of animating.
-- Visible focus ring: 2px Adire indigo + 2px offset on every interactive element.
+- Primary on light: `#111827`
+- Secondary on light: `#64748B`
+- Primary on dark: `#F8FAFC`
+- Secondary on dark: `#CBD5E1`
+
+Every color pairing must meet accessible contrast requirements.
+
+The primary indigo may need a darker hover or text variant to maintain sufficient contrast.
+
+## 4. Typography
+
+Primary font: **Geist Sans**
+
+Secondary fallback: **Inter**
+
+Technical / monospace font: **Geist Mono**
+
+### Suggested Desktop Scale
+
+- Display heading: 64–76px
+- H1: 48–60px
+- H2: 36–44px
+- H3: 24–30px
+- Body large: 18–20px
+- Body standard: 16px
+- Supporting text: 14px
+- Metadata: 12–13px
+
+### Mobile Scale
+
+- Display heading: 38–44px
+- H1: 32–38px
+- H2: 26–30px
+- H3: 21–24px
+- Body: 15–16px
+
+Use clear hierarchy, balanced line lengths, and natural wrapping.
+
+Avoid excessive uppercase text and tiny interface labels.
+
+## 5. Layout System
+
+Use an 8px-based spacing rhythm with 4px intermediate increments.
+
+### Desktop
+
+- Main marketing container: maximum 1280px.
+- Dashboard: responsive fluid content.
+- Desktop dashboard sidebar: approximately 240–260px.
+- Maximum reading width for long paragraphs: 680–760px.
+- Section spacing: 88–120px.
+- Grid layouts: 12-column where helpful.
+
+### Tablet
+
+- Breakpoints around 768–1023px.
+- Reduce horizontal spacing.
+- Collapse nonessential sidebar elements.
+- Convert wide three-column layouts to two columns.
+
+### Mobile
+
+- Below 768px.
+- Single-column layouts by default.
+- 20–24px horizontal page padding.
+- Comfortable touch targets, ideally at least 44px.
+- Avoid horizontal scrolling in primary business workflows.
+- Stack product illustrations beneath important copy.
+
+## 6. Component System
+
+Create reusable UI components for:
+
+- Buttons: primary, secondary, outline, destructive, text.
+- Inputs, selectors, textareas, checkboxes, and radio controls.
+- Cards, badges, tooltips, dialogs, drawers, and dropdowns.
+- Tabs, breadcrumbs, steppers, and navigation.
+- Tables, lists, filters, and pagination.
+- Status indicators and activity timelines.
+- Empty states, errors, loading skeletons, and confirmations.
+- Assistant cards and capability cards.
+- Conversation messages, voice controls, and execution traces.
+- Usage meters and billing summaries.
+
+All interactive components must include hover, focus, active, disabled, loading, and error states as applicable.
+
+## 7. Motion and Interactions
+
+Use subtle animations to communicate state and quality.
+
+- Standard UI transition: 150–250ms.
+- Section reveal: 350–550ms.
+- Buttons: subtle color or elevation transitions.
+- Cards: restrained hover responses.
+- Voice waveform: animate only when actual activity exists.
+- Page transitions: minimal and non-disruptive.
+- Honor `prefers-reduced-motion`.
+
+Avoid unnecessary parallax, animation-heavy dashboards, and distracting effects.
+
+## 8. Landing Page Design
+
+The landing page should feel like a premium, modern technology company.
+
+Required sections:
+
+1. Navigation bar.
+2. Hero with headline, subheading, CTA, and product preview.
+3. Trust and product-value introduction.
+4. Interactive product demonstration.
+5. Core capabilities.
+6. How Switchboard works.
+7. Industry use cases.
+8. AI-to-action workflow with Kora payments.
+9. Reliability, security, and human oversight.
+10. Pricing preview.
+11. FAQ.
+12. Final CTA and footer.
+
+### Hero
+
+Headline concept:
+
+**Your business never stops. Neither should your front desk.**
+
+Supporting text:
+
+Switchboard gives your business AI assistants that answer customers, manage bookings, capture leads, and complete approved tasks—without losing the human touch.
+
+Primary CTA: **Get started**
+
+Secondary CTA: **See how it works**
+
+The product preview should demonstrate a conversation progressing into a verified business action.
+
+## 9. Authentication and Onboarding
+
+Authentication screens should be minimal and distraction-free.
+
+Provide:
+
+- Signup and signin.
+- Email verification.
+- Password recovery or suitable passwordless authentication.
+- Error and loading states.
+
+Onboarding follows a guided sequence:
+
+1. Business details.
+2. Business knowledge.
+3. Assistant identity.
+4. Capabilities and permissions.
+5. Test and activation.
+
+Advanced settings remain optional during initial onboarding.
+
+## 10. Dashboard Information Architecture
+
+Primary navigation:
+
+- Overview
+- AI Assistants
+- Conversations
+- Customers
+- Needs Attention
+- Business Modules
+- Analytics
+- Integrations
+- Team & Permissions
+- Usage & Billing
+- Settings
+
+Desktop uses grouped sidebar navigation.
+
+Mobile prioritizes Home, Conversations, Assistants, Attention, and More.
+
+## 11. Assistant Builder
+
+Use a guided assistant creation process with advanced configuration available separately.
+
+Assistant configuration includes:
+
+- Identity and role.
+- Knowledge sources.
+- Voice and personality.
+- Capabilities.
+- Execution permissions.
+- Escalation rules.
+- Testing.
+- Publishing and versions.
+
+Each assistant belongs to a workspace.
+
+Draft and published versions must remain distinct.
+
+## 12. Testing and Publishing
+
+Provide a dedicated Test & Publish studio.
+
+Include:
+
+- Text and voice testing.
+- Simulated business actions.
+- Execution traces.
+- Readiness checks.
+- Blocking and non-blocking warnings.
+- Version comparison.
+- Publish confirmation.
+- Deployment history.
+- Rollback controls.
+
+Never visually represent an unverified action as successfully completed.
+
+## 13. Status and Feedback
+
+Use explicit outcome categories:
+
+- Completed
+- In progress
+- Pending confirmation
+- Needs attention
+- Failed
+- Unknown / Requires reconciliation
+
+Critical financial and booking states must never be inferred from the visual interface alone.
+
+## 14. Accessibility
+
+- WCAG 2.2 AA design target.
+- Keyboard-accessible controls.
+- Visible focus states.
+- Accessible contrast.
+- Form labels and error descriptions.
+- Screen-reader-compatible navigation.
+- Respect reduced-motion preferences.
+- Avoid color-only status communication.
+
+## 15. Design Principles
+
+1. Product clarity over decoration.
+2. Business outcomes over AI novelty.
+3. Reliable execution over unrealistic promises.
+4. Progressive disclosure over crowded screens.
+5. Consistency across multiple industries.
+6. Mobile usability from the beginning.
+7. Premium experience without sacrificing accessibility.
+
+## 16. Booking, Hold Band, and Chaos Layouts
+
+### The Hold Band
+A held slot carries a **Warning (`#F59E0B`) band that drains** left-to-right over its 15-minute hold window. When payment verifies, the band floods **Iris (`#6258E8`)** (with **Success (`#10B981`)** status badge) and the slot locks as confirmed (300ms transition). The same element appears on:
+- The customer's deposit card in chat and on `/b/[slug]`
+- The owner's day calendar tiles
+- Every slot tile on the `/chaos` projector dashboard (on **Midnight `#101827`** surface)
+
+### Key Layouts
+- **Public booking page (`/b/[slug]`):** Mobile-first on **Canvas (`#F7F8FB`)** with **Surface (`#FFFFFF`)** cards and **Border (`#E5E7EB`)** — business header → service rows → day strip & time chips → hold band + Kora bank-transfer deposit card.
+- **Owner dashboard day view:** Staff as columns, time down the left, bookings as tiles with hold bands; right-side inbox with `needs_human` conversations pinned on top.
+- **Chaos dashboard (`/chaos`):** **Midnight (`#101827`)** dark mode for projector contrast — 10 large slot tiles in a row, live bot activity log underneath, and 5 invariant counters with pass (`#10B981`) / fail (`#EF4444`).
+
+### Copy & Performance Rules (Lighthouse ≥ 95)
+- **Copy:** Sentence case everywhere, active verbs ("Hold this time", "Copy account number", "Reply as staff", "Refund deposit" — never "Submit").
+- **Performance:** Public booking page is a Server Component (only the time-chip picker and deposit card are client components); self-hosted fonts via `next/font`; `prefers-reduced-motion` disables continuous animations; visible 2px **Iris (`#6258E8`)** focus ring on all interactive elements.
+
+## 17. Design Implementation Rules
+
+Use this document as the primary design reference for all pages.
+
+Do not introduce arbitrary colors, fonts, shadows, spacing systems, or navigation patterns.
+
+Maintain a single reusable component system.
+
+Every page must include desktop and mobile designs.
+
+Design all relevant empty, loading, error, and success states.
+
+Marketing demonstrations must be clearly identified when they use simulated data.
+
+Future pages should follow the same design tokens and visual hierarchy.

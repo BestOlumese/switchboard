@@ -9,13 +9,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "better-auth": "1.7.16",
+    "drizzle-orm": "0.45.4",
     "next": "16.4.4",
+    "pg": "8.23.1",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@switchboard/config": "workspace:*",
     "@types/node": "26.6.6",
+    "@types/pg": "8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "typescript": "7.0.2"

@@ -4,20 +4,30 @@ import { createLogger, maskPhone } from './logger.ts';
 
 const silent = createLogger({ level: 'silent' });
 
-describe('GET /health', () => {
+describe('GET /health and /api/health', () => {
   it('is ok when the DB answers', async () => {
     const pool = { query: vi.fn().mockResolvedValue({ rows: [] }) };
-    const res = await createApp({ pool, logger: silent }).request('/health');
+    const app = createApp({ pool, logger: silent });
+    const res = await app.request('/health');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ status: 'ok', db: 'ok' });
     expect(res.headers.get('x-request-id')).toBeTruthy();
+
+    const resApi = await app.request('/api/health');
+    expect(resApi.status).toBe(200);
+    expect(await resApi.json()).toEqual({ status: 'ok', db: 'ok' });
   });
 
   it('is 503 when the DB is down', async () => {
     const pool = { query: vi.fn().mockRejectedValue(new Error('ECONNREFUSED')) };
-    const res = await createApp({ pool, logger: silent }).request('/health');
+    const app = createApp({ pool, logger: silent });
+    const res = await app.request('/health');
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ status: 'error', db: 'down' });
+
+    const resApi = await app.request('/api/health');
+    expect(resApi.status).toBe(503);
+    expect(await resApi.json()).toEqual({ status: 'error', db: 'down' });
   });
 });
 

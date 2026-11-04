@@ -4,6 +4,7 @@ packages:
 
 # AGENTS/02-tech-stack: pin exact versions
 saveExact: true
+minimumReleaseAge: 0
 
 # Install scripts are deny-by-default. Allow only what we need.
 allowBuilds:

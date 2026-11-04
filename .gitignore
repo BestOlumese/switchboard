@@ -13,3 +13,4 @@ test-results/
 *.log
 *.tsbuildinfo
 next-env.d.ts
+.neon

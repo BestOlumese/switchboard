@@ -109,11 +109,13 @@ export const webSchema = z.object({
 });
 export type WebEnv = z.infer<typeof webSchema>;
 
+const defaultApiTarget = process.env.API_ORIGIN ?? process.env.API_URL ?? 'http://localhost:4000';
+
 /** apps/mock-kora (local + CI only). */
 export const mockKoraSchema = z.object({
   PORT: intFromString(4010),
-  WEBHOOK_TARGET: z.url().default('http://localhost:4000/webhooks/kora'),
-  WA_WEBHOOK_TARGET: z.url().default('http://localhost:4000/webhooks/whatsapp'),
+  WEBHOOK_TARGET: z.url().default(`${defaultApiTarget}/webhooks/kora`),
+  WA_WEBHOOK_TARGET: z.url().default(`${defaultApiTarget}/webhooks/whatsapp`),
   WA_APP_SECRET: z.string().min(1),
   KORA_SECRET_KEY: z.string().startsWith('sk_'),
 });
