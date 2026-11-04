@@ -15,21 +15,25 @@ interface ScrollRevealProps {
   duration?: number;
   yOffset?: number;
   scale?: number;
+  ease?: string;
   staggerChildren?: boolean;
   staggerDelay?: number;
   childSelector?: string;
+  triggerOffset?: string;
 }
 
 export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   children,
   className = '',
-  delay = 0,
-  duration = 0.8,
-  yOffset = 36,
+  delay = 0.2,
+  duration = 1.0,
+  yOffset = 32,
   scale = 0.98,
+  ease = 'back.out(0.85)',
   staggerChildren = false,
-  staggerDelay = 0.12,
+  staggerDelay = 0.16,
   childSelector,
+  triggerOffset = 'top 78%',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,10 +64,10 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
               duration,
               delay,
               stagger: staggerDelay,
-              ease: 'back.out(1.3)',
+              ease,
               scrollTrigger: {
                 trigger: el,
-                start: 'top 85%',
+                start: triggerOffset,
                 once: true,
               },
             },
@@ -85,10 +89,10 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
           scale: 1,
           duration,
           delay,
-          ease: 'back.out(1.2)',
+          ease,
           scrollTrigger: {
             trigger: el,
-            start: 'top 88%',
+            start: triggerOffset,
             once: true,
           },
         },
@@ -96,7 +100,17 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
     });
 
     return () => mm.revert();
-  }, [delay, duration, yOffset, scale, staggerChildren, staggerDelay, childSelector]);
+  }, [
+    delay,
+    duration,
+    yOffset,
+    scale,
+    ease,
+    staggerChildren,
+    staggerDelay,
+    childSelector,
+    triggerOffset,
+  ]);
 
   return (
     <div ref={containerRef} className={className}>

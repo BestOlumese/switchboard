@@ -86,7 +86,7 @@ export default function Home() {
 
             <div className="relative mx-auto flex max-w-7xl flex-col items-center text-center">
               {/* Eyebrow Badge */}
-              <ScrollReveal yOffset={20} duration={0.6}>
+              <ScrollReveal yOffset={20} duration={0.8} delay={0.15}>
                 <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-surface/10 bg-surface/5 px-3.5 py-1.5 backdrop-blur-md">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-iris-light opacity-75" />
@@ -104,12 +104,13 @@ export default function Home() {
                   as="h1"
                   effect="float"
                   splitBy="words"
-                  distance={50}
-                  stretch={1.15}
-                  animationDuration={0.9}
+                  distance={45}
+                  stretch={1.12}
+                  animationDuration={1.1}
                   ease="power2.out"
-                  scrollStart="top 95%"
+                  scrollStart="top 92%"
                   scrollEnd="center 50%"
+                  smoothing={0.5}
                   containerClassName="my-0"
                   textClassName="font-display-hero text-display-hero-mobile tracking-tight text-on-primary lg:text-display-hero inline-block leading-tight"
                 >
@@ -118,7 +119,7 @@ export default function Home() {
               </div>
 
               {/* Subcopy */}
-              <ScrollReveal delay={0.2} duration={0.8} yOffset={24}>
+              <ScrollReveal delay={0.35} duration={1.0} yOffset={24}>
                 <p className="mb-10 max-w-2xl text-balance font-body-lg text-body-lg text-secondary-fixed-dim">
                   Switchboard gives your business AI assistants that answer customers, manage
                   bookings, capture leads, and complete approved tasks—without losing the human
@@ -127,7 +128,7 @@ export default function Home() {
               </ScrollReveal>
 
               {/* CTAs */}
-              <ScrollReveal delay={0.3} duration={0.8} yOffset={20}>
+              <ScrollReveal delay={0.5} duration={1.0} yOffset={20}>
                 <div className="z-10 mb-16 flex flex-col items-center gap-4 sm:flex-row">
                   <Link
                     href="/auth/signup"
@@ -147,7 +148,7 @@ export default function Home() {
               </ScrollReveal>
 
               {/* HERO PRODUCT VISUAL: High-Fidelity Console Artifact */}
-              <ScrollReveal delay={0.4} duration={0.9} yOffset={40} scale={0.97}>
+              <ScrollReveal delay={0.65} duration={1.1} yOffset={36} scale={0.98}>
                 <div className="relative w-full max-w-5xl rounded-xl border border-surface/10 bg-surface/5 p-2 text-left shadow-2xl backdrop-blur-2xl sm:p-4">
                   {/* Console Window Header */}
                   <div className="flex items-center justify-between rounded-t-lg border-b border-surface/10 bg-midnight-hero/80 px-4 py-3">
