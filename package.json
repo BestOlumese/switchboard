@@ -27,8 +27,5 @@
     "knip": "6.44.1",
     "turbo": "2.11.10",
     "typescript": "7.0.2"
-  },
-  "dependencies": {
-    "better-auth": "1.7.16"
   }
 }
